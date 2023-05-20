@@ -1,38 +1,32 @@
-import { Component } from 'react';
+import { useEffect } from 'react';
 import css from './Modal.module.css';
 import PropTypes from 'prop-types';
 
-export class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.hendleKeyDown);
-  }
+export const Modal = ({ urlPhoto, onClose }) => {
+  useEffect(() => {
+    window.addEventListener('keydown', hendleKeyDown);
+  });
 
-  componentDidUpdate() {
-    window.addEventListener('keydown', this.hendleKeyDown);
-  }
-
-  hendleKeyDown = event => {
+  const hendleKeyDown = event => {
     if (event.code === 'Escape') {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  hendleBeckdropClick = event => {
+  const hendleBeckdropClick = event => {
     if (event.currentTarget === event.target) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    return (
-      <div className={css.Overlay} onClick={this.hendleBeckdropClick}>
-        <div className={css.Modal}>
-          <img src={this.props.urlPhoto.url} alt="" />
-        </div>
+  return (
+    <div className={css.Overlay} onClick={hendleBeckdropClick}>
+      <div className={css.Modal}>
+        <img src={urlPhoto.url} alt="" />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
