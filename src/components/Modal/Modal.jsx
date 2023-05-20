@@ -22,7 +22,7 @@ export const Modal = ({ urlPhoto, onClose }) => {
   return (
     <div className={css.Overlay} onClick={hendleBeckdropClick}>
       <div className={css.Modal}>
-        <img src={urlPhoto.url} alt="" />
+        <img src={urlPhoto} alt="" />
       </div>
     </div>
   );
@@ -30,7 +30,5 @@ export const Modal = ({ urlPhoto, onClose }) => {
 
 Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
-  urlPhoto: PropTypes.shape({
-    url: PropTypes.string.isRequired,
-  }),
+  urlPhoto: PropTypes.string.isRequired
 };

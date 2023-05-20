@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { Searchbar } from './Searchbar';
 import { ImageGallery } from './ImageGallery';
 import { Button } from './Button';
@@ -6,85 +6,68 @@ import { Loader } from './Loader';
 import { Modal } from './Modal';
 import css from './App.module.css';
 
-export class App extends Component {
-  state = {
-    pictureName: '',
-    page: 1,
-    pictures: [],
-    error: null,
-    status: null,
-    showeModal: false,
-    urlPicture: '',
-  };
+export const App = () => {
+  const [pictureName, setPictureName] = useState('');
+  const [page, setPage] = useState(1);
+  const [pictures, setPictures] = useState([]);
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState(null);
+  const [showeModal, setShoweModal] = useState(false);
+  const [urlPicture, setUrlPicture] = useState('');
 
-  hendleSubmit = event => {
+  const hendleSubmit = event => {
     event.preventDefault();
     const value = event.currentTarget.elements.pictureName.value;
     if (value.trim() === '') {
       alert('Enter the title');
       return;
     }
-    if (value === this.state.pictureName) {
-      alert(`You have already entered the word ${value}`)
-      return
+    if (value === pictureName) {
+      alert(`You have already entered the word ${value}`);
+      return;
     }
-    this.setState({
-      pictureName: value.toLowerCase(),
-      pictures: [],
-      page: 1,
-    });
+    setPictureName(value.toLowerCase());
+    setPictures([]);
+    setPage(1);
   };
 
-  onLoadMore = () => {
-    this.setState(({ page }) => ({
-      page: page + 1,
-    }));
+  const onLoadMore = () => {
+    setPage(() => page + 1);
   };
 
-  onModal = url => {
-    this.setState(prevState => ({
-      showeModal: !prevState.showeModal,
-      urlPicture: { url },
-    }));
+  const onModal = url => {
+    setShoweModal(!showeModal);
+    setUrlPicture(url);
   };
 
-  componentDidUpdate = (prevProps, prevState) => {
-    const prevName = prevState.pictureName;
-    const nextName = this.state.pictureName;
-
-    if (prevName !== nextName || prevState.page !== this.state.page) {
-      this.setState({ status: 'pending' });
-      fetch(
-        `https://pixabay.com/api/?q=${nextName}&page=${this.state.page}&key=34851334-286cf58f2651b78053c9b207d&image_type=photo&orientation=horizontal&per_page=12`
-      )
-        .then(res => res.json())
-        .then(picture => {
-          this.setState(prevState => ({
-            pictures: [...prevState.pictures, ...picture.hits],
-            status: 'resolved',
-          }));
-        })
-        .catch(error => this.setState({ error, status: 'rejected' }));
+  useEffect(() => {
+    if (!pictureName) {
+      return;
     }
-  };
+    setStatus('pending');
+    fetch(
+      `https://pixabay.com/api/?q=${pictureName}&page=${page}&key=34851334-286cf58f2651b78053c9b207d&image_type=photo&orientation=horizontal&per_page=12`
+    )
+      .then(res => res.json())
+      .then(picture => {
+        setPictures(prevState => [...prevState, ...picture.hits]);
+        setStatus('resolved');
+      })
+      .catch(error => {
+        setError(error);
+        setStatus('rejected');
+      });
+  }, [pictureName, page]);
 
-  render() {
-    return (
-      <div className={css.App}>
-        {this.state.status === 'rejected' && (
-          <h1>{this.state.error.message}</h1>
-        )}
-        <Searchbar onSubmit={this.hendleSubmit} />
-        <ImageGallery pictures={this.state.pictures} onModal={this.onModal} />
-        {this.state.showeModal && (
-          <Modal onClose={this.onModal} urlPhoto={this.state.urlPicture} />
-        )}
+  return (
+    <div className={css.App}>
+      {status === 'rejected' && <h1>{error.message}</h1>}
+      <Searchbar onSubmit={hendleSubmit} />
+      <ImageGallery pictures={pictures} onModal={onModal} />
+      {showeModal && <Modal onClose={onModal} urlPhoto={urlPicture} />}
 
-        {this.state.status === 'pending' && <Loader />}
-        {this.state.pictures.length >= 12 && (
-          <Button onClick={this.onLoadMore} />
-        )}
-      </div>
-    );
-  }
-}
+      {status === 'pending' && <Loader />}
+      {pictures.length >= 12 && <Button onClick={onLoadMore} />}
+    </div>
+  );
+};
